@@ -2,22 +2,17 @@ import nodemailer from "nodemailer";
 
 export const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,                 // Go back to 587 (TLS)
-    secure: false,             // Must be false for 587
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: false, // True for 465, false for other ports
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD,
     },
-    tls: {
-      // ⚠️ THIS IS THE BYPASS FIX:
-      rejectUnauthorized: false, // Don't fail if the certificate looks weird
-      ciphers: "SSLv3",          // Force an older cipher that sometimes bypasses blocks
-    },
   });
 
   const message = {
-    from: `"Fitness Tracker Support" <${process.env.SMTP_EMAIL}>`,
+    from: `"Fitness Tracker" <${process.env.SMTP_EMAIL}>`, // Sender address
     to: options.email,
     subject: options.subject,
     html: `
@@ -30,11 +25,5 @@ export const sendEmail = async (options) => {
     `,
   };
 
-  try {
-    await transporter.sendMail(message);
-    console.log("Email sent successfully!");
-  } catch (error) {
-    console.error("Critical Email Error:", error);
-    throw error; // Let the controller know it failed
-  }
+  await transporter.sendMail(message);
 };
