@@ -1,21 +1,23 @@
 import nodemailer from "nodemailer";
 
 export const sendEmail = async (options) => {
-  // 1. Create Transporter with EXPLICIT settings for Render
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com", 
-    port: 465,               // ✅ Port 465 is the most reliable for Render -> Gmail
-    secure: true,            // ✅ Must be true for port 465
+    host: "smtp.gmail.com",
+    port: 587,                 // Back to 587 (TLS)
+    secure: false,             // False for 587
     auth: {
-      user: process.env.SMTP_EMAIL,     
-      pass: process.env.SMTP_PASSWORD,  
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
     },
-    // Optional: connection timeout setting to fail faster if blocked
-    connectionTimeout: 10000, 
+    tls: {
+      // This is the magic fix for cloud servers:
+      rejectUnauthorized: false, 
+      ciphers: "SSLv3",
+    },
   });
 
   const message = {
-    from: `"Fitness Tracker Support" <${process.env.SMTP_EMAIL}>`,
+    from: `"Fitness Tracker" <${process.env.SMTP_EMAIL}>`,
     to: options.email,
     subject: options.subject,
     html: `
@@ -28,12 +30,5 @@ export const sendEmail = async (options) => {
     `,
   };
 
-  try {
-    await transporter.sendMail(message);
-    console.log("Email sent successfully");
-  } catch (error) {
-    console.error("Nodemailer Error:", error);
-    // Rethrow so your controller catches it
-    throw error;
-  }
+  await transporter.sendMail(message);
 };
