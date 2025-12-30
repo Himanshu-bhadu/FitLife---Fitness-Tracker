@@ -15,6 +15,7 @@ connectDB();
 
 const app = express();
 
+app.set("trust proxy", 1);
 app.use(cors({
   origin: 'https://fit-life-fitness-tracker.vercel.app', 
   credentials: true

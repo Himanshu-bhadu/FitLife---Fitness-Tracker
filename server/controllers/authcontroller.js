@@ -115,15 +115,19 @@ export const loginUser = asynhandler(async (req, res) => {
   res
     .cookie("accessToken", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(new apiresponse(200, user, "Login successful"));
 });
 
 export const logoutUser = asynhandler(async (req, res) => {
-  res.clearCookie("accessToken");
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
   return res.status(200).json(new apiresponse(200, {}, "Logged out successfully"));
 });
     
