@@ -17,7 +17,10 @@ const app = express();
 
 app.set("trust proxy", 1);
 app.use(cors({
-  origin: 'https://fit-life-fitness-tracker.vercel.app', 
+  origin: [
+    'https://fit-life-fitness-tracker.vercel.app', // Production
+    'http://localhost:5173'                          // Development (Add this!)
+  ],
   credentials: true
 }));
 app.use(express.json());
