@@ -15,7 +15,7 @@ const ForgotPasswordPage = () => {
 
     try {
       await api.post("/api/auth/forgot-password", { email });
-      setMessage("✅ Reset link sent! Check your email (or server console).");
+      setMessage("✅ Reset link sent! Check your email.");
     } catch (error) {
       setMessage("❌ " + (error.response?.data?.message || "Error sending email"));
     } finally {
