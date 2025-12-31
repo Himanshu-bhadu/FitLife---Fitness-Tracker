@@ -130,4 +130,8 @@ export const logoutUser = asynhandler(async (req, res) => {
   });
   return res.status(200).json(new apiresponse(200, {}, "Logged out successfully"));
 });
-    
+
+export const checkAuth = asynhandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password"); // Don't send password
+  return res.status(200).json(new apiresponse(200, user, "User verified"));
+});
