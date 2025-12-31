@@ -1,10 +1,7 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser , forgotPassword,resetPassword,checkAuth} from "../controllers/authcontroller.js";
-import { verifyJWT } from "../middleware/auth.middleware.js";
+import { registerUser, loginUser, logoutUser , forgotPassword,resetPassword} from "../controllers/authcontroller.js";
 const router = express.Router();
 
-
-router.route("/check-auth").get(verifyJWT, checkAuth);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/logout", logoutUser);
