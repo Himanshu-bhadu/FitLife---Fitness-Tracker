@@ -3,12 +3,9 @@ import { Resend } from 'resend';
 export const sendEmail = async (options) => {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  console.log("📧 Sending email via Resend...");
-  console.log("To:", options.email);
-
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Fitness Tracker <onboarding@resend.dev>', // This works immediately
+      from: 'Fitness Tracker <onboarding@resend.dev>',
       to: options.email,
       subject: options.subject,
       html: `
@@ -23,14 +20,13 @@ export const sendEmail = async (options) => {
     });
 
     if (error) {
-      console.error("❌ Resend error:", error);
+      console.error("❌ Resend error:", error); // Kept for debugging failures
       throw error;
     }
 
-    console.log("✅ Email sent successfully!", data);
     return data;
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error("❌ Failed to send email:", error); // Kept for debugging failures
     throw new Error("Failed to send email");
   }
 };
