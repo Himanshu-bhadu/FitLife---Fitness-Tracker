@@ -14,21 +14,16 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // --- NEW CODE: Check if already logged in ---
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
-        // We call the 'me' endpoint. If the browser has a cookie, this will succeed.
         const response = await api.get('/api/user/me');
         
         if (response.data.success) {
-          // User is already logged in! Restore session and go to dashboard.
           sessionStorage.setItem('user', JSON.stringify(response.data.data));
           navigate("/dashboard");
         }
       } catch (err) {
-        // If this fails (401 Error), it just means they really DO need to log in.
-        // We stop loading and show the form.
         setCheckingAuth(false);
       } finally {
         setCheckingAuth(false);
@@ -37,7 +32,6 @@ const LoginPage = () => {
 
     checkLoggedIn();
   }, [navigate]);
-  // ---------------------------------------------
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,8 +55,6 @@ const LoginPage = () => {
     }
   };
 
-  // While we are checking if the user is logged in, show a spinner
-  // instead of the login form so it doesn't look glitchy.
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">

@@ -26,17 +26,11 @@ api.interceptors.response.use(
   (error) => {
     const originalRequest = error.config;
 
-    // --- FIX START ---
-    // If the error comes from checking the user profile, DO NOT reload.
-    // Just let the LoginPage handle the error (by showing the login form).
     if (error.response?.status === 401 && originalRequest.url.includes('/api/user/me')) {
       return Promise.reject(error);
     }
-    // --- FIX END ---
-
     if (error.response?.status === 401) {
       sessionStorage.clear();
-      // Only redirect if we aren't already on the login page to avoid loops
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
