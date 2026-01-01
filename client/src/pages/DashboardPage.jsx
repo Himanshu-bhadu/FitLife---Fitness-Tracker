@@ -29,11 +29,11 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     try {
       await api.get("/api/auth/logout");
-      localStorage.clear();
+      sessionStorage.clear();
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      localStorage.clear();
+      sessionStorage.clear();
       navigate("/login");
     }
   };
