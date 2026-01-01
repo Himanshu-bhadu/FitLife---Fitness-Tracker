@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../api/axios";
@@ -9,7 +9,27 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [checking, setChecking] = useState(true);
   const navigate = useNavigate();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = localStorage.getItem('user'); // ✅ Changed to localStorage
+      
+      if (user) {
+        try {
+          await api.get('/api/user/me');
+          navigate('/dashboard', { replace: true });
+        } catch (error) {
+          localStorage.clear(); // ✅ Changed to localStorage
+        }
+      }
+      setChecking(false);
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +43,12 @@ const LoginPage = () => {
       });
 
       if (response.data.success) {
-        sessionStorage.setItem('user', JSON.stringify(response.data.data));
-        navigate("/dashboard");
+        // Store user and token
+        localStorage.setItem('user', JSON.stringify(response.data.data)); // ✅ Changed
+        // If your backend returns token in response, store it:
+        // localStorage.setItem('token', response.data.data.token);
+        
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
@@ -33,19 +57,26 @@ const LoginPage = () => {
     }
   };
 
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-indigo-700 font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen">
-
-      {/* Left Side - Image (Desktop Only) */}
       <div 
         className="hidden md:flex w-1/2 bg-cover bg-center relative" 
         style={{ backgroundImage: `url(${fitnessImg})` }}
       >
-        {/* Subtle overlay to blend with the theme */}
         <div className="absolute inset-0 bg-indigo-900/20 backdrop-blur-[1px]"></div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex w-full md:w-1/2 justify-center items-center px-6 py-12 bg-gradient-to-br from-indigo-50 via-white to-indigo-100">
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
@@ -128,3 +159,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

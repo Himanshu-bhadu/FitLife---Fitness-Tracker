@@ -8,9 +8,10 @@ const api = axios.create({
   },
 });
 
+// Request interceptor - Add token to all requests
 api.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token'); // ✅ Changed to localStorage
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,11 +22,13 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor - Handle auth errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      sessionStorage.clear();
+      // Clear storage and redirect to login
+      localStorage.clear(); // ✅ Now consistent
       window.location.href = '/login';
     }
     return Promise.reject(error);
