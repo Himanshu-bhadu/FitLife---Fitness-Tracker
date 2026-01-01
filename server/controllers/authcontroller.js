@@ -4,6 +4,9 @@ import { apiresponse } from "../utils/apiresponse.js";
 import { asynhandler } from "../utils/asynchandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const forgotPassword = asynhandler(async (req, res) => {
   const { email } = req.body;
@@ -25,7 +28,6 @@ export const forgotPassword = asynhandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-
   const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
   try {
@@ -47,7 +49,6 @@ export const forgotPassword = asynhandler(async (req, res) => {
     throw new apierror(500, "Email could not be sent. Please check your internet or try again.");
   }
 
-  
   return res.status(200).json(
     new apiresponse(200, { link: resetUrl }, "Reset link generated (Check server console)")
   );
@@ -98,6 +99,7 @@ export const registerUser = asynhandler(async (req, res) => {
   );
 });
 
+// --- FIXED LOGIN USER ---
 export const loginUser = asynhandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -112,22 +114,71 @@ export const loginUser = asynhandler(async (req, res) => {
 
   const token = user.generateToken();
 
+  // FIX: Dynamic Environment Logic
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  // FIX: Send Token in Body (For Incognito Support)
+  const userResponse = user.toObject();
+  userResponse.accessToken = token; 
+
   res
     .cookie("accessToken", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProduction,           // false on Localhost, true on Production
+      sameSite: isProduction ? "none" : "lax", // 'lax' prevents loop on Localhost
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-    .json(new apiresponse(200, user, "Login successful"));
+    .json(new apiresponse(200, userResponse, "Login successful"));
 });
 
+// --- FIXED LOGOUT USER ---
 export const logoutUser = asynhandler(async (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
   return res.status(200).json(new apiresponse(200, {}, "Logged out successfully"));
 });
-    
+
+// --- GOOGLE LOGIN (Already mostly correct, just ensuring consistent logic) ---
+export const googleLogin = asynhandler(async (req, res) => {
+  const { credential } = req.body;
+
+  const ticket = await client.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  
+  const { name, email, picture } = ticket.getPayload();
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    const randomPassword = crypto.randomBytes(20).toString('hex');
+    user = await User.create({
+      name,
+      email,
+      password: randomPassword,
+      profilePic: picture,
+    });
+  }
+
+  const token = user.generateToken();
+  
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  const userResponse = user.toObject();
+  userResponse.accessToken = token; 
+
+  res
+    .cookie("accessToken", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .json(new apiresponse(200, userResponse, "Google Login successful"));
+});

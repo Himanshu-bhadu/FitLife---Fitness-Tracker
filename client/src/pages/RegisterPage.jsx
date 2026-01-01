@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google"; // <--- IMPORT THIS
 import api from "../api/axios";
 import fitnessImg2 from "../images/fitness2.jpg";
 import toast from "react-hot-toast";
@@ -61,6 +62,36 @@ const RegisterPage = () => {
       setLoading(false);
     }
   };
+
+  // --- GOOGLE HANDLERS ---
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.post('/api/auth/google', {
+        credential: credentialResponse.credential
+      });
+
+      if (response.data.success) {
+        // Just like login, save token and redirect
+        sessionStorage.setItem('user', JSON.stringify(response.data.data));
+        if (response.data.data.accessToken) {
+          sessionStorage.setItem('token', response.data.data.accessToken);
+        }
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Google Sign Up Failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google Sign Up Failed. Please try again.");
+  };
+  // -----------------------
   
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -167,6 +198,24 @@ const RegisterPage = () => {
               {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
+
+          {/* --- GOOGLE LOGIN SECTION --- */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink-0 mx-4 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              width="100%"
+            />
+          </div>
+          {/* --------------------------- */}
 
           <p className="text-center text-sm text-gray-600 mt-6">
             Already have an account?{" "}

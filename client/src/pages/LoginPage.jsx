@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google"; // <--- IMPORT THIS
 import { motion } from "framer-motion";
 import api from "../api/axios";
 import fitnessImg from "../images/fitness.jpg";
@@ -7,7 +8,7 @@ import fitnessImg from "../images/fitness.jpg";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <--- NEW STATE
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState("");
@@ -52,6 +53,35 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  // --- GOOGLE HANDLERS ---
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await api.post('/api/auth/google', {
+        credential: credentialResponse.credential
+      });
+
+      if (response.data.success) {
+        sessionStorage.setItem('user', JSON.stringify(response.data.data));
+        if (response.data.data.accessToken) {
+          sessionStorage.setItem('token', response.data.data.accessToken);
+        }
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Google Login Failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google Login Failed. Please try again.");
+  };
+  // -----------------------
 
   if (checkingAuth) {
     return (
@@ -106,7 +136,7 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"} // Dynamic Type
+                  type={showPassword ? "text" : "password"}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -150,6 +180,24 @@ const LoginPage = () => {
               ) : "Log In"}
             </button>
           </form>
+
+          {/* --- GOOGLE LOGIN SECTION --- */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink-0 mx-4 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              width="100%"
+            />
+          </div>
+          {/* --------------------------- */}
 
           <p className="text-center text-sm text-gray-600 mt-8">
             Don't have an account?{" "}
