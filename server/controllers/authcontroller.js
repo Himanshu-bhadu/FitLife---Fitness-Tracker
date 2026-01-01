@@ -5,9 +5,6 @@ import { asynhandler } from "../utils/asynchandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import crypto from "crypto";
 
-// ... (Keep forgotPassword, resetPassword, and registerUser exactly as they are) ...
-// ... (Paste them here if you are replacing the whole file) ...
-
 export const forgotPassword = asynhandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -101,7 +98,6 @@ export const registerUser = asynhandler(async (req, res) => {
   );
 });
 
-// --- UPDATED LOGIN FUNCTION ---
 export const loginUser = asynhandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -116,32 +112,22 @@ export const loginUser = asynhandler(async (req, res) => {
 
   const token = user.generateToken();
 
-  // FIX 1: Determine Environment
-  const isProduction = process.env.NODE_ENV === "production";
-
-  // FIX 2: Add Token to Response Body
-  // We convert the mongoose document to a plain object so we can add the token
-  const userResponse = user.toObject();
-  userResponse.accessToken = token; 
-
   res
     .cookie("accessToken", token, {
       httpOnly: true,
-      secure: isProduction,           // false on Localhost, true on Production
-      sameSite: isProduction ? "none" : "lax", // 'lax' prevents loop on Localhost
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-    .json(new apiresponse(200, userResponse, "Login successful")); // Sending token in body
+    .json(new apiresponse(200, user, "Login successful"));
 });
 
-// --- UPDATED LOGOUT FUNCTION ---
 export const logoutUser = asynhandler(async (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: isProduction,           // Must match the settings used to create the cookie
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
   });
   return res.status(200).json(new apiresponse(200, {}, "Logged out successfully"));
 });
+    

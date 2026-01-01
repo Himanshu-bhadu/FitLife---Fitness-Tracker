@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // --- NEW CODE: Check if already logged in ---
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
@@ -36,36 +37,29 @@ const LoginPage = () => {
 
     checkLoggedIn();
   }, [navigate]);
+  // ---------------------------------------------
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  try {
-    const response = await api.post('/api/auth/login', {
-      email,
-      password
-    });
+    try {
+      const response = await api.post('/api/auth/login', {
+        email,
+        password
+      });
 
-    if (response.data.success) {
-      // 1. Save User Data
-      sessionStorage.setItem('user', JSON.stringify(response.data.data));
-      
-      // 2. CRITICAL: Save the Token separately!
-      // Your axios.js is looking for 'token' in sessionStorage
-      if (response.data.data.accessToken) {
-        sessionStorage.setItem('token', response.data.data.accessToken);
+      if (response.data.success) {
+        sessionStorage.setItem('user', JSON.stringify(response.data.data));
+        navigate("/dashboard");
       }
-
-      navigate("/dashboard");
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.response?.data?.message || "Login failed. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // While we are checking if the user is logged in, show a spinner
   // instead of the login form so it doesn't look glitchy.
