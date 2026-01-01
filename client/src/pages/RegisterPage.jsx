@@ -12,7 +12,6 @@ const RegisterPage = () => {
     confirmPassword: "",
   });
   
-  // --- NEW STATE for toggling passwords ---
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -32,6 +31,11 @@ const RegisterPage = () => {
     setError("");
 
     const { name, email, password, confirmPassword } = formData;
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
@@ -99,10 +103,9 @@ const RegisterPage = () => {
               required
             />
 
-            {/* --- PASSWORD FIELD --- */}
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // Dynamic type
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -128,10 +131,9 @@ const RegisterPage = () => {
               </button>
             </div>
 
-            {/* --- CONFIRM PASSWORD FIELD --- */}
             <div className="relative">
               <input
-                type={showConfirmPassword ? "text" : "password"} // Dynamic type
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
