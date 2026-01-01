@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Import useEffect
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../api/axios";
@@ -8,7 +8,9 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true); // New state for initial check
+  
+  // New state to prevent the form from flashing before we check auth
+  const [checkingAuth, setCheckingAuth] = useState(true); 
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -16,18 +18,17 @@ const LoginPage = () => {
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
-        // We try to fetch the user profile. 
-        // If this succeeds, the HTTP-Only cookie is still valid.
+        // We call the 'me' endpoint. If the browser has a cookie, this will succeed.
         const response = await api.get('/api/user/me');
+        
         if (response.data.success) {
-          // Sync session storage just in case
+          // User is already logged in! Restore session and go to dashboard.
           sessionStorage.setItem('user', JSON.stringify(response.data.data));
-          // Redirect immediately to dashboard
           navigate("/dashboard");
         }
       } catch (err) {
-        // If error (401), it means not logged in. 
-        // We do nothing and let the Login form show.
+        // If this fails (401 Error), it just means they really DO need to log in.
+        // We stop loading and show the form.
         setCheckingAuth(false);
       } finally {
         setCheckingAuth(false);
@@ -60,8 +61,8 @@ const LoginPage = () => {
     }
   };
 
-  // Optional: Show a blank screen or spinner while checking auth
-  // so the login form doesn't flash briefly
+  // While we are checking if the user is logged in, show a spinner
+  // instead of the login form so it doesn't look glitchy.
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -72,15 +73,17 @@ const LoginPage = () => {
 
   return (
     <div className="flex min-h-screen">
-       {/* ... (Keep the rest of your JSX exactly the same) ... */}
-       {/* Just copy the return (...) block from your original file here */}
+
+      {/* Left Side - Image (Desktop Only) */}
       <div 
         className="hidden md:flex w-1/2 bg-cover bg-center relative" 
         style={{ backgroundImage: `url(${fitnessImg})` }}
       >
+        {/* Subtle overlay to blend with the theme */}
         <div className="absolute inset-0 bg-indigo-900/20 backdrop-blur-[1px]"></div>
       </div>
 
+      {/* Right Side - Form */}
       <div className="flex w-full md:w-1/2 justify-center items-center px-6 py-12 bg-gradient-to-br from-indigo-50 via-white to-indigo-100">
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
@@ -110,6 +113,7 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
+                placeholder=""
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -121,6 +125,7 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
                 type="password"
+                placeholder=""
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
