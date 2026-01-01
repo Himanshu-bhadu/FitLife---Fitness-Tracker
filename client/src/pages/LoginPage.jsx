@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Import useEffect
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../api/axios";
@@ -8,8 +8,35 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true); // New state for initial check
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // --- NEW CODE: Check if already logged in ---
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      try {
+        // We try to fetch the user profile. 
+        // If this succeeds, the HTTP-Only cookie is still valid.
+        const response = await api.get('/api/user/me');
+        if (response.data.success) {
+          // Sync session storage just in case
+          sessionStorage.setItem('user', JSON.stringify(response.data.data));
+          // Redirect immediately to dashboard
+          navigate("/dashboard");
+        }
+      } catch (err) {
+        // If error (401), it means not logged in. 
+        // We do nothing and let the Login form show.
+        setCheckingAuth(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkLoggedIn();
+  }, [navigate]);
+  // ---------------------------------------------
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,19 +60,27 @@ const LoginPage = () => {
     }
   };
 
+  // Optional: Show a blank screen or spinner while checking auth
+  // so the login form doesn't flash briefly
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen">
-
-      {/* Left Side - Image (Desktop Only) */}
+       {/* ... (Keep the rest of your JSX exactly the same) ... */}
+       {/* Just copy the return (...) block from your original file here */}
       <div 
         className="hidden md:flex w-1/2 bg-cover bg-center relative" 
         style={{ backgroundImage: `url(${fitnessImg})` }}
       >
-        {/* Subtle overlay to blend with the theme */}
         <div className="absolute inset-0 bg-indigo-900/20 backdrop-blur-[1px]"></div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex w-full md:w-1/2 justify-center items-center px-6 py-12 bg-gradient-to-br from-indigo-50 via-white to-indigo-100">
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
@@ -75,7 +110,6 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
-                placeholder=""
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -87,7 +121,6 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
                 type="password"
-                placeholder=""
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
