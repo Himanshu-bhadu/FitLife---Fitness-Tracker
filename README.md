@@ -13,8 +13,10 @@
 
 ## 🚀 Key Features
 
-* **📱 Fully Responsive Design:** Optimized for all devices. whether you are on a mobile phone, tablet, or desktop, the UI adapts perfectly for a seamless experience.
-* **🔐 Full Token-Based Authentication:** Secure login system using **JWT (JSON Web Tokens)** that ensures persistent sessions and privacy protection across all browsers and incognito modes.
+* **📱 Fully Responsive Design:** Optimized for all devices. Whether you are on a mobile phone, tablet, or desktop, the UI adapts perfectly for a seamless experience.
+* **🔐 Advanced Authentication:**
+    * **Google OAuth:** One-click login/signup using Google for a frictionless user experience.
+    * **Hybrid Security:** Secure login system using **JWT (JSON Web Tokens)** that ensures persistent sessions and privacy protection across all browsers
 * **📊 Real-Time Dashboard:** Instantly view your net calorie balance, macronutrient breakdown (Protein/Carbs/Fat), and daily health summaries.
 * **🍎 Advanced Nutrition Search:** Leverage the **FatSecret API** to search thousands of food items and retrieve accurate calorie and macro data.
 * **🏃‍♂️ Smart Workout Logging:** Automatically calculate calories burned for any physical activity based on duration and body weight using **API Ninjas**.
@@ -30,12 +32,13 @@
 * **React.js** (Vite)
 * **Tailwind CSS** (Responsive Styling)
 * **Framer Motion** (Animations)
-* **Material UI** (Components)
+* **Google OAuth** (@react-oauth/google)
 * **Recharts** (Data Visualization)
 
 ### Backend
 * **Node.js & Express.js**
 * **MongoDB & Mongoose** (Database)
+* **Google Auth Library** (Server-side Verification)
 * **JWT & Bcrypt** (Auth & Security)
 
 ### External APIs & Services
@@ -53,6 +56,7 @@ Follow these steps to set up the project locally on your machine.
 ### Prerequisites
 * **Node.js** (v14+)
 * **MongoDB** (Local or Atlas URI)
+* **Google Cloud Console Account** (for OAuth Client ID)
 * **Git**
 
 ### Installation
