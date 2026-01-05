@@ -99,7 +99,6 @@ export const registerUser = asynhandler(async (req, res) => {
   );
 });
 
-// --- FIXED LOGIN USER ---
 export const loginUser = asynhandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -114,24 +113,21 @@ export const loginUser = asynhandler(async (req, res) => {
 
   const token = user.generateToken();
 
-  // FIX: Dynamic Environment Logic
   const isProduction = process.env.NODE_ENV === "production";
   
-  // FIX: Send Token in Body (For Incognito Support)
   const userResponse = user.toObject();
   userResponse.accessToken = token; 
 
   res
     .cookie("accessToken", token, {
       httpOnly: true,
-      secure: isProduction,           // false on Localhost, true on Production
-      sameSite: isProduction ? "none" : "lax", // 'lax' prevents loop on Localhost
+      secure: isProduction,       
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(new apiresponse(200, userResponse, "Login successful"));
 });
 
-// --- FIXED LOGOUT USER ---
 export const logoutUser = asynhandler(async (req, res) => {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -143,7 +139,6 @@ export const logoutUser = asynhandler(async (req, res) => {
   return res.status(200).json(new apiresponse(200, {}, "Logged out successfully"));
 });
 
-// --- GOOGLE LOGIN (Already mostly correct, just ensuring consistent logic) ---
 export const googleLogin = asynhandler(async (req, res) => {
   const { credential } = req.body;
 
