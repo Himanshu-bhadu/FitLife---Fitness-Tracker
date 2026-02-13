@@ -9,7 +9,7 @@
 
 🔗 **Live Demo:** [https://fit-life-fitness-tracker.vercel.app](https://fit-life-fitness-tracker.vercel.app)
 
----
+--
 
 ## 🚀 Key Features
 
